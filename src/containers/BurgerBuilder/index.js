@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import Burger from '../../components/Burger';
 import Wrapper from '../../hoc/Wrapper';
 import BuildControls from '../../components/Burger/BuildControls';
+import Modal from '../../components/UI/Modal';
+import OrderSummary from '../../components/Burger/OrderSummary'
 
 const PRICES = {
     salad: 0.5,
@@ -19,7 +21,29 @@ class BurgerBuilder extends Component {
             cheese: 0,
             meat: 0
         },
-        totalPrice: 4
+        totalPrice: 4,
+        purchasable: false,
+        purchasing: false
+    }
+
+    purchaseHandler = () =>{
+        this.setState({
+            purchasing: true
+        })
+    }
+
+    updatePurchaseState = (argIngredients) =>{
+        const ingredients = {
+            ...argIngredients
+        }
+
+        const sum = Object.keys(ingredients).reduce((acc, cur)=>{
+            return acc + ingredients[cur]
+        }, 0)
+
+        this.setState({
+            purchasable: sum > 0
+        })
     }
 
     addIngredientHandler = (type) => {
@@ -34,6 +58,7 @@ class BurgerBuilder extends Component {
             ingredients: instanceOfIngredients,
             totalPrice: updatedPrice
         })
+        this.updatePurchaseState(instanceOfIngredients);
     }
 
     removeIngredientHandler = (type) => {
@@ -49,8 +74,19 @@ class BurgerBuilder extends Component {
                 ingredients: instanceOfIngredients,
                 totalPrice: updatedPrice
             })
+            this.updatePurchaseState(instanceOfIngredients);
         } else {
         }
+    }
+
+    purchaseCancelHandler = () => {
+        this.setState({
+            purchasing: false
+        })
+    }
+
+    purchaseContinueHandler = () => {
+        alert("You have purchased successfully");
     }
 
     render(){
@@ -64,12 +100,21 @@ class BurgerBuilder extends Component {
 
         return(
             <Wrapper>
+                <Modal show={this.state.purchasing} modalClosed={this.purchaseCancelHandler}>
+                    <OrderSummary
+                        price={this.state.totalPrice}
+                        ingredients={this.state.ingredients}
+                        purchaseCancel={this.purchaseCancelHandler}
+                        purchaseContinue={this.purchaseContinueHandler}/>
+                </Modal>
                 <Burger ingredients={this.state.ingredients} />
                 <BuildControls
-                    addEvent={this.addIngredientHandler}
-                    removeEvent={this.removeIngredientHandler}
-                    disabledInfos={disabledInfos}
-                />
+                        price={this.state.totalPrice}
+                        addEvent={this.addIngredientHandler}
+                        removeEvent={this.removeIngredientHandler}
+                        disabledInfos={disabledInfos}
+                        purchasable={this.state.purchasable}
+                        order={this.purchaseHandler}/>
             </Wrapper>
         )
     }
