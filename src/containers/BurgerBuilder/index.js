@@ -7,25 +7,17 @@ import Modal from '../../components/UI/Modal';
 import OrderSummary from '../../components/Burger/OrderSummary';
 import Spinner from '../../components/UI/Spinner';
 import withErrorHandler from '../../hoc/withErrorHandler';
-import * as actionTypes from '../../store/actions';
 import axios from '../../axios-orders';
+import * as burgerBuilderActions from '../../store/actions/burgerBuilder';
 
 class BurgerBuilder extends Component {
 
     state = {
-        purchasing: false,
-        loading: false,
-        error: false
+        purchasing: false
     }
 
     componentDidMount(){
-        // axios.get('/ingredients.json')
-        //     .then(response => {
-        //         this.setState({ingredients: response.data})
-        //     })
-        //     .catch(error => {
-        //         this.setState({error: true})
-        //     })
+        this.props.onInitIngredients();
     }
 
     purchaseHandler = () =>{
@@ -45,39 +37,6 @@ class BurgerBuilder extends Component {
 
         return sum > 0;
     }
-
-    // addIngredientHandler = (type) => {
-    //     const oldCountIngredient = this.state.ingredients[type];
-    //     const updatedCount = oldCountIngredient + 1;
-    //     const instanceOfIngredients = {
-    //         ...this.state.ingredients
-    //     }
-    //     instanceOfIngredients[type] = updatedCount;
-    //     const updatedPrice = this.state.totalPrice + PRICES[type];
-    //     this.setState({
-    //         ingredients: instanceOfIngredients,
-    //         totalPrice: updatedPrice
-    //     })
-    //     this.updatePurchaseState(instanceOfIngredients);
-    // }
-    //
-    // removeIngredientHandler = (type) => {
-    //     const oldCountIngredient = this.state.ingredients[type];
-    //
-    //     if(oldCountIngredient > 0) {
-    //         const updatedCount = oldCountIngredient - 1;
-    //         const instanceOfIngredients = { ...this.state.ingredients };
-    //         instanceOfIngredients[type] = updatedCount;
-    //         const updatedPrice = this.state.totalPrice - PRICES[type];
-    //
-    //         this.setState({
-    //             ingredients: instanceOfIngredients,
-    //             totalPrice: updatedPrice
-    //         })
-    //         this.updatePurchaseState(instanceOfIngredients);
-    //     } else {
-    //     }
-    // }
 
     purchaseCancelHandler = () => {
         this.setState({
@@ -99,7 +58,7 @@ class BurgerBuilder extends Component {
         }
 
         let orderSummary = null;
-        let burger = this.state.error ? <p>Ingredients cannot be loaded</p>
+        let burger = this.props.error ? <p>Ingredients cannot be loaded</p>
                                         :<Spinner />
 
         if(this.props.ings){
@@ -123,10 +82,6 @@ class BurgerBuilder extends Component {
                 purchaseContinue={this.purchaseContinueHandler}/>
         }
 
-        if(this.state.loading){
-            orderSummary = <Spinner />
-        }
-
         return(
             <Wrapper>
                 <Modal show={this.state.purchasing} modalClosed={this.purchaseCancelHandler}>
@@ -140,21 +95,17 @@ class BurgerBuilder extends Component {
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        onIngredientAdded: (ingName) => dispatch({
-            type: actionTypes.ADD_INGREDIENT,
-            ingredientName: ingName
-        }),
-        onIngredientRemoved: (ingName) => dispatch({
-            type: actionTypes.REMOVE_INGREDIENT,
-            ingredientName: ingName
-        })
+        onIngredientAdded: (ingName) => dispatch(burgerBuilderActions.addIngredient(ingName)),
+        onIngredientRemoved: (ingName) => dispatch(burgerBuilderActions.removeIngredient(ingName)),
+        onInitIngredients: () => dispatch(burgerBuilderActions.asyncInitIngredients())
     }
 }
 
 const mapStateToProps = (state) => {
     return {
-        ings: state.ingredients,
-        price: state.totalPrice
+        ings: state.burgerBuilder.ingredients,
+        price: state.burgerBuilder.totalPrice,
+        error: state.burgerBuilder.error
     }
 }
 
