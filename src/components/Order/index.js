@@ -23,6 +23,7 @@ const order = (props) => {
             }}
             key={ig.name}>{ig.name} ({ig.amount})</span>
     })
+    
     return(
         <div className={classes.Order}>
             <p>Ingredients: { ingredientList } </p>
