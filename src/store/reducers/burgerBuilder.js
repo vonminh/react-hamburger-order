@@ -1,4 +1,5 @@
 import * as actionTypes from '../actions/actionTypes';
+import { updateObject } from '../utility';
 
 const PRICES = {
     salad: 0.5,
@@ -16,29 +17,33 @@ const initialState = {
 const burgerBuilder = (state = initialState, action) => {
     switch(action.type){
         case actionTypes.ADD_INGREDIENT:
-            return {
-                ...state,
-                ingredients: {
-                    ...state.ingredients,
-                    [action.ingredientName]: state.ingredients[action.ingredientName] + 1
-                },
+            const updatedIngredient = { [action.ingredientName]: state.ingredients[action.ingredientName] + 1 };
+            const updatedIngredients = updateObject(state.ingredients, updatedIngredient);
+            const updatedStateProperties = {
+                ingredients: updatedIngredients,
                 totalPrice: state.totalPrice + PRICES[action.ingredientName]
             }
+            return updateObject(state, updatedStateProperties);
 
         case actionTypes.REMOVE_INGREDIENT:
-            return {
-                ...state,
-                ingredients: {
-                    ...state.ingredients,
-                    [action.ingredientName]: state.ingredients[action.ingredientName] - 1
-                },
+            const updatedIng = { [action.ingredientName]: state.ingredients[action.ingredientName] - 1 };
+            const updatedIngs = updateObject(state.ingredients, updatedIng);
+            const updatedStateProps = {
+                ingredients: updatedIngs,
                 totalPrice: state.totalPrice - PRICES[action.ingredientName]
             }
+            return updateObject(state, updatedStateProps);
 
         case actionTypes.INIT_INGREDIENTS:
             return {
                 ...state,
-                ingredients: action.ingredients,
+                ingredients: {
+                    salad: action.ingredients.salad,
+                    cheese: action.ingredients.cheese,
+                    bacon: action.ingredients.bacon,
+                    meat: action.ingredients.meat
+                },
+                totalPrice: 4,
                 error: true
             }
 
