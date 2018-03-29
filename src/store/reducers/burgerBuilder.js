@@ -14,29 +14,28 @@ const initialState = {
     error: false
 }
 
+const getAdjustedProperties = (state, action) => {
+    const adjustAmount = action.type === actionTypes.ADD_INGREDIENT ? 1 : -1;
+    const updatedIngredient = { [action.ingredientName]: state.ingredients[action.ingredientName] + adjustAmount };
+    const updatedIngredients = updateObject(state.ingredients, updatedIngredient);
+    return {
+        ingredients: updatedIngredients,
+        totalPrice: state.totalPrice + (PRICES[action.ingredientName] * adjustAmount)
+    }
+}
+
 const burgerBuilder = (state = initialState, action) => {
     switch(action.type){
         case actionTypes.ADD_INGREDIENT:
-            const updatedIngredient = { [action.ingredientName]: state.ingredients[action.ingredientName] + 1 };
-            const updatedIngredients = updateObject(state.ingredients, updatedIngredient);
-            const updatedStateProperties = {
-                ingredients: updatedIngredients,
-                totalPrice: state.totalPrice + PRICES[action.ingredientName]
-            }
+            const updatedStateProperties = getAdjustedProperties(state, action);
             return updateObject(state, updatedStateProperties);
 
         case actionTypes.REMOVE_INGREDIENT:
-            const updatedIng = { [action.ingredientName]: state.ingredients[action.ingredientName] - 1 };
-            const updatedIngs = updateObject(state.ingredients, updatedIng);
-            const updatedStateProps = {
-                ingredients: updatedIngs,
-                totalPrice: state.totalPrice - PRICES[action.ingredientName]
-            }
-            return updateObject(state, updatedStateProps);
+            const updatedProperties = getAdjustedProperties(state, action);
+            return updateObject(state, updatedProperties);
 
         case actionTypes.INIT_INGREDIENTS:
-            return {
-                ...state,
+            return updateObject(state, {
                 ingredients: {
                     salad: action.ingredients.salad,
                     cheese: action.ingredients.cheese,
@@ -45,13 +44,10 @@ const burgerBuilder = (state = initialState, action) => {
                 },
                 totalPrice: 4,
                 error: true
-            }
+            });
 
         case actionTypes.FETCH_INGREDIENTS_FAILED:
-            return {
-                ...state,
-                error: true
-            }
+            return updateObject(state, { error: true });
 
         default:
             return state;
